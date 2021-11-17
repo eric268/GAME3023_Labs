@@ -11,4 +11,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Main Scene.unity
     guid: 77beb8a7432643e41a8f222bf65c5b57
+  - enabled: 1
+    path: Assets/Scenes/RandomEncounterScene.unity
+    guid: 0c805b5423166cb4093558cb6c822295
   m_configObjects: {}

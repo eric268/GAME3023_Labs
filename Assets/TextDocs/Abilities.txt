@@ -1,0 +1,8 @@
+0, Scratch, User swips at opponent, 5, 0.05, 0.95
+1, High Knee, User stikes with their knee, 7, 0.08, 0.85
+2, Low kick, User sweeps the opponent, 10, 0.05, 0.90
+3, Bite, User bites opponent, 12, 0.01, 0.80
+4, Branch Bash, User swings at opponent with branch, 15, 0.05, 1.0
+5, Pebbel throw, User throws small pebbel at opponent, 10, 0.01, 1.0
+6, Splash, User splashes water at the enemy, 3, 0.01, 0.95
+7, Sand throw, User throw sand at enemies eyes, 8, 0.2, 1.0
