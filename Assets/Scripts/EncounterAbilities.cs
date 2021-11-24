@@ -2,6 +2,22 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
+using System;
+
+public enum AbilityType
+{
+    NONE,
+    NORMAL,
+    FIGHTING,
+    SHADOW,
+    FIRE,
+    EARTH,
+    WIND,
+    WATER,
+    ROCK,
+    NUM_ABILITY_TYPES,
+};
+
 
 public class EncounterAbilities : MonoBehaviour
 {
@@ -14,10 +30,6 @@ public class EncounterAbilities : MonoBehaviour
     public static void LoadAbilities()
     {
         string path = Application.dataPath + "/TextDocs/Abilities.txt";
-        if (!File.Exists(path))
-        {
-            File.WriteAllText(path, "");
-        }
 
         if (File.Exists(path))
         {
@@ -34,10 +46,14 @@ public class EncounterAbilities : MonoBehaviour
                 float damage = int.Parse(arr[3]);
                 float critChance = float.Parse(arr[4]);
                 float accuracy = float.Parse(arr[5]);
-                Ability ability = new Ability(idNumber, name, description, damage, critChance, accuracy);
+                AbilityType type = (AbilityType)(int.Parse(arr[6]));
+                float accuracyAfflication = float.Parse(arr[7]);
+                Ability ability = new Ability(idNumber, name, description, damage, critChance, accuracy, type, accuracyAfflication);
                 abilityList.Add(ability);
             }
         }
+        else
+            Debug.LogError("Could not find Abilities text file");
 
     }
 }
@@ -50,6 +66,8 @@ public class Ability
     public float damage;
     public float critChance;
     public float accuracy;
+    public AbilityType abilityType;
+    public float accuraccyAfflication;
 
     public Ability()
     {
@@ -59,9 +77,11 @@ public class Ability
         damage = -1;
         critChance = -1;
         accuracy = -1;
+        abilityType = ConvertIntToAbilityType(0);
+        accuraccyAfflication = 0;
     }
 
-    public Ability(int id, string n, string d, float dam, float crit, float acc)
+    public Ability(int id, string n, string d, float dam, float crit, float acc, AbilityType type, float accuraccyAffl)
     {
         iDNumber = id;
         abilityName = n;
@@ -69,11 +89,38 @@ public class Ability
         damage = dam;
         critChance = crit;
         accuracy = acc;
+        abilityType = type;
+        accuraccyAfflication = accuraccyAffl;
     }
 
     public static Ability CopyAbility(Ability ability)
     {
-        return new Ability(ability.iDNumber, ability.abilityName, ability.description, ability.damage, ability.critChance, ability.accuracy);
+        return new Ability(ability.iDNumber, ability.abilityName, ability.description, ability.damage, ability.critChance, ability.accuracy, ability.abilityType, ability.accuraccyAfflication);
+    }
+    public static AbilityType ConvertIntToAbilityType(int val)
+    {
+        switch(val)
+        {
+            case -1:
+                return AbilityType.NONE;
+            case 0:
+                return AbilityType.NORMAL;
+            case 1:
+                return AbilityType.FIGHTING;
+            case 2:
+                return AbilityType.SHADOW;
+            case 3:
+                return AbilityType.FIRE;
+            case 4:
+                return AbilityType.EARTH;
+            case 5:
+                return AbilityType.WIND;
+            case 6:
+                return AbilityType.WATER;
+            case 7:
+                return AbilityType.ROCK;
+        }
+        return AbilityType.NONE;
     }
 }
 

@@ -6,11 +6,14 @@ using UnityEngine.SceneManagement;
 public class PlayerAttributes : MonoBehaviour
 {
     public static List<int> playerAbilityIDs;
+    public float accuraccyAfflication = 0.0f;
+    public float playerHealth = 100.0f;
     // Start is called before the first frame update
     void Start()
     {
         //This is temporary and will be loaded either with a player pref or txt document
         LoadPlayerAbilityIDs();
+
     }
 
     // Update is called once per frame

@@ -3,17 +3,23 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-
-public class RandomEncounterManager : MonoBehaviour
+[System.Serializable]
+public class PlayerEncounterManager : MonoBehaviour
 {
     int[] playerMovesID;
     bool isPlayersTurn = true;
-
-    public GameObject fightScene, optionsScene, move1Button, move2Button, move3Button, move4Button, fightButton, fleeButton, backButton;
+    float minimumAccuracyThreshold = 0.3f;
+    public GameObject fightScene, optionsScene, move1Button, move2Button, move3Button, move4Button, fightButton, fleeButton, backButton, enemyCharacter;
     public Ability move1Ability, move2Ability, move3Ability, move4Ability;
     public TextMeshProUGUI damageText, critChanceText, accuraccyText;
+    public GameObject enemyRef;
+    PlayerAttributes playerAttributes;
+
     // Start is called before the first frame update
-    
+
+    delegate void PlayerMadeMoveDelegate(bool attackHit, float damage, float accuraccyAfflication);
+    PlayerMadeMoveDelegate playerMadeMoveDelegate;
+
     void Start()
     {
         playerMovesID = new int[4];
@@ -22,6 +28,11 @@ public class RandomEncounterManager : MonoBehaviour
             PlayerAttributes.LoadPlayerAbilityIDs();
         if (EncounterAbilities.abilityList == null)
             EncounterAbilities.LoadAbilities();
+
+        playerAttributes = GetComponent<PlayerAttributes>();
+
+        enemyRef = GameObject.Find("Enemy");
+        playerMadeMoveDelegate = enemyRef.GetComponent<EnemyEncounterManager>().PlayerMoveRecieved;
 
         LoadButtonAbility(ref move1Button, ref move1Ability, PlayerAttributes.playerAbilityIDs[0]);
         LoadButtonAbility(ref move2Button, ref move2Ability, PlayerAttributes.playerAbilityIDs[1]);
@@ -45,7 +56,6 @@ public class RandomEncounterManager : MonoBehaviour
         if (!isPlayersTurn)
         {
             isPlayersTurn = true;
-            Debug.Log("Enemy made a move");
         }
     }
 
@@ -54,7 +64,7 @@ public class RandomEncounterManager : MonoBehaviour
         if (isPlayersTurn)
         {
             isPlayersTurn = false;
-            UseAbility(move1Ability);
+            UseAbility(move1Ability, "Player");
         }
 
     }
@@ -63,7 +73,7 @@ public class RandomEncounterManager : MonoBehaviour
         if (isPlayersTurn)
         {
             isPlayersTurn = false;
-            UseAbility(move2Ability);
+            UseAbility(move2Ability, "Player");
         }
     }
     void Move3ButtonPressed()
@@ -71,7 +81,7 @@ public class RandomEncounterManager : MonoBehaviour
         if (isPlayersTurn)
         {
             isPlayersTurn = false;
-            UseAbility(move2Ability);
+            UseAbility(move3Ability, "Player");
         }
     }
     void Move4ButtonPressed()
@@ -79,7 +89,7 @@ public class RandomEncounterManager : MonoBehaviour
         if (isPlayersTurn)
         {
             isPlayersTurn = false;
-            UseAbility(move2Ability);
+            UseAbility(move4Ability, "Player");
         }
     }
 
@@ -89,20 +99,40 @@ public class RandomEncounterManager : MonoBehaviour
         button.GetComponentInChildren<TextMeshProUGUI>().text = ablity.abilityName;
     }
 
-    void UseAbility(Ability ability)
+    void UseAbility(Ability ability, string userName)
     {
+        if (userName == "Player")
+            Debug.Log("Player used " + ability.abilityName);
+        else
+            Debug.Log(userName + " used " + ability.abilityName);
+
+
+
         float ranAccuraccy = Random.Range(0.0f, 1.0f);
-        if (ranAccuraccy <= ability.accuracy)
+        float enemyAccuracy = (ability.accuracy - playerAttributes.accuraccyAfflication);
+        enemyAccuracy = (enemyAccuracy <= minimumAccuracyThreshold) ? minimumAccuracyThreshold : enemyAccuracy;
+        if (ranAccuraccy <= enemyAccuracy)
         {
             float ranCrit = Random.Range(0.0f, 1.0f);
+            float damage = 0;
             if (ranCrit <= ability.critChance)
-                Debug.Log("Player did: " + (2.0f * ability.damage) + " damage to enemy from a critical strike");
+            {
+                damage = (2.0f * ability.damage);
+                Debug.Log(userName + " did: " + damage + " damage from a critical strike");
+            }
             else
-                Debug.Log("Player did: " + ability.damage + " damage to enemy");
+            {
+                damage = ability.damage;
+                Debug.Log(userName + " did: " + damage + " damage");
+            }
+            Debug.Log("Enemies accuraccy decreased by: " + (ability.accuraccyAfflication * 100) + "%");
+            playerMadeMoveDelegate(true, damage, ability.accuraccyAfflication);
         }
         else
-            Debug.Log("Player missed their attack");
-
+        {
+            Debug.Log(userName + " missed their attack");
+            playerMadeMoveDelegate(false, 0, 0.0f);
+        }
         fightScene.SetActive(false);
         optionsScene.SetActive(true);
     }
@@ -146,11 +176,23 @@ public class RandomEncounterManager : MonoBehaviour
 
     void FleeButtonPressed()
     {
-       SceneManager.LoadScene("Main Scene");
+        SceneManager.LoadScene("Main Scene");
     }
 
     void BackButtonPressed()
     {
+        fightScene.SetActive(false);
+        optionsScene.SetActive(true);
+    }
+
+    public void EnemyMadeMove(bool hit, int damage, float accurraccyAfflication)
+    {
+        if (hit)
+        {
+            playerAttributes.playerHealth -= damage;
+            playerAttributes.accuraccyAfflication += accurraccyAfflication;
+        }
+
         fightScene.SetActive(false);
         optionsScene.SetActive(true);
     }
