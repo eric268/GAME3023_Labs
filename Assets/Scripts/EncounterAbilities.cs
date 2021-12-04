@@ -43,7 +43,7 @@ public class EncounterAbilities : MonoBehaviour
                 int idNumber = int.Parse(arr[0]);
                 string name = arr[1];
                 string description = arr[2];
-                float damage = int.Parse(arr[3]);
+                int damage = int.Parse(arr[3]);
                 float critChance = float.Parse(arr[4]);
                 float accuracy = float.Parse(arr[5]);
                 AbilityType type = (AbilityType)(int.Parse(arr[6]));
@@ -63,7 +63,7 @@ public class Ability
     public int iDNumber;
     public string abilityName;
     public string description;
-    public float damage;
+    public int damage;
     public float critChance;
     public float accuracy;
     public AbilityType abilityType;
@@ -81,7 +81,7 @@ public class Ability
         accuraccyAfflication = 0;
     }
 
-    public Ability(int id, string n, string d, float dam, float crit, float acc, AbilityType type, float accuraccyAffl)
+    public Ability(int id, string n, string d, int dam, float crit, float acc, AbilityType type, float accuraccyAffl)
     {
         iDNumber = id;
         abilityName = n;

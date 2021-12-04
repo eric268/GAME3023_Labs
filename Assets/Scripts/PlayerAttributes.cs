@@ -5,8 +5,7 @@ using UnityEngine.SceneManagement;
 
 public class PlayerAttributes : MonoBehaviour
 {
-    [SerializeField]
-
+    public string m_playerName;
     public static List<int> playerAbilityIDs;
     public float accuraccyAfflication = 0.0f;
     public float playerHealth = 100.0f;
@@ -15,6 +14,7 @@ public class PlayerAttributes : MonoBehaviour
     {
         //This is temporary and will be loaded either with a player pref or txt document
         LoadPlayerAbilityIDs();
+        m_playerName = "Mike";
 
     }
 

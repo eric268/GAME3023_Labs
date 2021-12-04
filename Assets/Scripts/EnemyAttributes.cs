@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class EnemyAttributes : MonoBehaviour
-{ 
-
+{
+    public string m_enemyName;
     public static List<int> enemyAbilityIDs;
     public float enemyAccuraccyAfflication = 0.0f;
     public float enemyHealth = 100.0f;
@@ -23,7 +23,7 @@ public class EnemyAttributes : MonoBehaviour
     {
         enemyAbilityIDs = new List<int>();
         LoadEnemyAbilityIDs();
-
+        m_enemyName = "Goblin";
     }
 
     // Update is called once per frame

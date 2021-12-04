@@ -9,17 +9,18 @@ using UnityEngine.UI;
 public class EnemyEncounterManager : MonoBehaviour
 {
     [SerializeField]
-    GameObject m_healthBar;
+    GameObject m_healthBar, m_DialogueBox;
 
 
-    public GameObject playerRef;
+    public GameObject playerRef, m_optionsScene;
     public EnemyAttributes enemyAttributes;
     public List<Ability> enemyAbilities;
     float minimumAccuracyThreshold = 0.3f;
     float AIIntelligence = 0.6f;
     float currentHealth;
-
-    delegate void EnemyMadeMoveDelegate(bool hit, int damage, float accuraccyAfflication);
+    bool useAbility = false;
+    
+    delegate void EnemyMadeMoveDelegate(string enemyName, string abilityName, bool hit, bool critAttack, int damage, float accuraccyAfflication);
     EnemyMadeMoveDelegate enemyMadeMoveDelegate;
 
     // Start is called before the first frame update
@@ -32,6 +33,7 @@ public class EnemyEncounterManager : MonoBehaviour
 
         playerRef = GameObject.Find("Player");
         enemyMadeMoveDelegate = playerRef.GetComponent<PlayerEncounterManager>().EnemyMadeMove;
+        enemyMadeMoveDelegate += m_DialogueBox.GetComponent<EncounterDialogueManager>().MoveMade;
         enemyAttributes = GetComponent<EnemyAttributes>();
         enemyAbilities = new List<Ability>();
 
@@ -46,10 +48,15 @@ public class EnemyEncounterManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        if (useAbility && m_optionsScene.activeInHierarchy)
+        {
+            UseAbility(ChooseEnemyAttack(), "Enemy");
+            m_DialogueBox.SetActive(true);
+        }
     }
-    public void PlayerMoveRecieved(bool hit, float damage, float accuraccyAfflication)
+    public void PlayerMoveRecieved(string name, string abilityName, bool hit,bool critAttack, int damage, float accuraccyAfflication)
     {
+        useAbility = true;
         if (hit)
         {
             currentHealth -= damage;
@@ -69,41 +76,39 @@ public class EnemyEncounterManager : MonoBehaviour
         {
             enemyAttributes.playerLowHealth = true;
         }
-
-        UseAbility(ChooseEnemyAttack(), "Enemy");
     }
 
     public void UseAbility(Ability ability, string userName)
     {
+        useAbility = false;
+        bool attackHit = false;
+        int damage = 0;
+        bool critHit = false;
+        float accAfflication = 0;
+        string abilityName = "";
+
         float ranAccuraccy = UnityEngine.Random.Range(0.0f, 1.0f);
         float enemyAccuracy = (ability.accuracy - enemyAttributes.enemyAccuraccyAfflication);
 
-
         enemyAccuracy = (enemyAccuracy <= minimumAccuracyThreshold) ? minimumAccuracyThreshold : enemyAccuracy;
-        Debug.Log("Enemy used " + ability.abilityName);
         if (ranAccuraccy <= enemyAccuracy)
         {
+            attackHit = true;
+            accAfflication = ability.accuraccyAfflication;
+            abilityName = ability.abilityName;
             float ranCrit = UnityEngine.Random.Range(0.0f, 1.0f);
-            int damage = 0;
             if (ranCrit <= ability.critChance)
             {
+                critHit = true;
                 damage = (int)(2.0f * ability.damage);
-                Debug.Log(userName + " did: " + damage + " damage from a critical strike");
-                enemyMadeMoveDelegate(true, damage, ability.accuraccyAfflication);
             }
             else
             {
                 damage = (int)ability.damage;
-                Debug.Log(userName + " did: " + damage + " damage");
-                enemyMadeMoveDelegate(true, damage, ability.accuraccyAfflication);
             }
-            Debug.Log("Players accuraccy decreased by: " + (ability.accuraccyAfflication * 100) + "%");
         }
-        else
-        {
-            Debug.Log(userName + " missed their attack");
-            enemyMadeMoveDelegate(false, 0, 0.0f);
-        }
+        enemyMadeMoveDelegate(enemyAttributes.m_enemyName, abilityName, attackHit, critHit, damage, accAfflication);
+
     }
 
     void LoadEnemeyAbilities()

@@ -7,21 +7,23 @@ using UnityEngine.UI;
 public class PlayerEncounterManager : MonoBehaviour
 {
     [SerializeField]
-    GameObject m_healthBar;
+    GameObject m_healthBar, m_DialogueBox;
 
     float currentHealth;
     int[] playerMovesID;
     bool isPlayersTurn = true;
     float minimumAccuracyThreshold = 0.3f;
+    [SerializeField]
     public GameObject fightScene, optionsScene, move1Button, move2Button, move3Button, move4Button, fightButton, fleeButton, backButton, enemyCharacter;
+    [SerializeField]
     public Ability move1Ability, move2Ability, move3Ability, move4Ability;
-    public TextMeshProUGUI damageText, critChanceText, accuraccyText;
+    public TextMeshProUGUI damageText, critChanceText, accuraccyText, accAfflicationText;
     public GameObject enemyRef;
     PlayerAttributes playerAttributes;
 
     // Start is called before the first frame update
 
-    delegate void PlayerMadeMoveDelegate(bool attackHit, float damage, float accuraccyAfflication);
+    delegate void PlayerMadeMoveDelegate(string playerName, string abilityName, bool attackHit, bool critAttack, int damage, float accuraccyAfflication);
     PlayerMadeMoveDelegate playerMadeMoveDelegate;
 
     void Start()
@@ -43,6 +45,7 @@ public class PlayerEncounterManager : MonoBehaviour
 
         enemyRef = GameObject.Find("Enemy");
         playerMadeMoveDelegate = enemyRef.GetComponent<EnemyEncounterManager>().PlayerMoveRecieved;
+        playerMadeMoveDelegate += m_DialogueBox.GetComponent<EncounterDialogueManager>().MoveMade;
 
         LoadButtonAbility(ref move1Button, ref move1Ability, PlayerAttributes.playerAbilityIDs[0]);
         LoadButtonAbility(ref move2Button, ref move2Ability, PlayerAttributes.playerAbilityIDs[1]);
@@ -111,40 +114,33 @@ public class PlayerEncounterManager : MonoBehaviour
 
     void UseAbility(Ability ability, string userName)
     {
-        if (userName == "Player")
-            Debug.Log("Player used " + ability.abilityName);
-        else
-            Debug.Log(userName + " used " + ability.abilityName);
-
-
+        bool attackHit = false;
+        bool critHit = false;
+        int damage = 0;
+        float accAfflication = 0;
+        string abilityName = "";
 
         float ranAccuraccy = Random.Range(0.0f, 1.0f);
         float enemyAccuracy = (ability.accuracy - playerAttributes.accuraccyAfflication);
         enemyAccuracy = (enemyAccuracy <= minimumAccuracyThreshold) ? minimumAccuracyThreshold : enemyAccuracy;
+        
         if (ranAccuraccy <= enemyAccuracy)
         {
             float ranCrit = Random.Range(0.0f, 1.0f);
-            float damage = 0;
+            attackHit = true;
+            abilityName = ability.abilityName;
+            accAfflication = ability.accuraccyAfflication;
             if (ranCrit <= ability.critChance)
             {
-                damage = (2.0f * ability.damage);
-                Debug.Log(userName + " did: " + damage + " damage from a critical strike");
+                critHit = true;
+                damage = (2 * ability.damage);
             }
             else
             {
                 damage = ability.damage;
-                Debug.Log(userName + " did: " + damage + " damage");
             }
-            Debug.Log("Enemies accuraccy decreased by: " + (ability.accuraccyAfflication * 100) + "%");
-            playerMadeMoveDelegate(true, damage, ability.accuraccyAfflication);
         }
-        else
-        {
-            Debug.Log(userName + " missed their attack");
-            playerMadeMoveDelegate(false, 0, 0.0f);
-        }
-        fightScene.SetActive(false);
-        optionsScene.SetActive(true);
+        playerMadeMoveDelegate(playerAttributes.m_playerName,abilityName, attackHit, critHit, damage, accAfflication);
     }
 
     public void Button1MouseOver()
@@ -168,12 +164,14 @@ public class PlayerEncounterManager : MonoBehaviour
         damageText.text = "Damage: " + ability.damage;
         critChanceText.text = "Crit Chance: " + (int)(ability.critChance * 100) + "%";
         accuraccyText.text = "Accuracy: " + (int)(ability.accuracy * 100) + "%";
+        accAfflicationText.text = "Acc. Debuff " + (int)(ability.accuraccyAfflication * 100) + "%";
         backButton.SetActive(false);
     }
     public void ClearMoveStatDisplay()
     {
         damageText.text = "";
         critChanceText.text = "";
+        accAfflicationText.text = "";
         accuraccyText.text = "";
         backButton.SetActive(true);
     }
@@ -195,7 +193,7 @@ public class PlayerEncounterManager : MonoBehaviour
         optionsScene.SetActive(true);
     }
 
-    public void EnemyMadeMove(bool hit, int damage, float accurraccyAfflication)
+    public void EnemyMadeMove(string enemyName,  string abilityName, bool hit,bool critAttack, int damage, float accurraccyAfflication)
     {
         if (hit)
         {
@@ -203,8 +201,5 @@ public class PlayerEncounterManager : MonoBehaviour
             m_healthBar.GetComponent<Slider>().value = currentHealth;
             playerAttributes.accuraccyAfflication += accurraccyAfflication;
         }
-
-        fightScene.SetActive(false);
-        optionsScene.SetActive(true);
     }
 }
