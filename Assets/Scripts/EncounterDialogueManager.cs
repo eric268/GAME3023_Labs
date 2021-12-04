@@ -26,7 +26,7 @@ public class EncounterDialogueManager : MonoBehaviour
     float m_timeCounter;
     bool startDisplayingMessages;
     string currentCharactesName;
-    bool encounterWon = false, newAbilitySelected = false;
+    bool playerLeveledUp = false, exitEncounter = false;
     bool enemyTurn = false;
     string enemyName, playerName;
 
@@ -44,9 +44,6 @@ public class EncounterDialogueManager : MonoBehaviour
         m_timeCounter = m_timeBetweenSentences;
         startDisplayingMessages = false;
         gameObject.SetActive(false);
-
-        enemyName = m_enemyRef.GetComponent<EnemyAttributes>().m_enemyName;
-        playerName = m_playerRef.GetComponent<PlayerAttributes>().m_playerName;
 
         loadNewPlayerAbilitiesDelegate = m_playerRef.GetComponent<PlayerEncounterManager>().LoadNewAbilities;
         makeEnemyUseAbilityDelegate = m_enemyRef.GetComponent<EnemyEncounterManager>().MakeEnemyUseAbility;
@@ -68,11 +65,11 @@ public class EncounterDialogueManager : MonoBehaviour
                 }
                 else
                 {
-                    if (newAbilitySelected)
+                    if (exitEncounter)
                     {
                         SceneManager.LoadScene("Main Scene");
                     }
-                    else if (encounterWon)
+                    else if (playerLeveledUp)
                     {
                         loadNewPlayerAbilitiesDelegate();
                     }
@@ -94,6 +91,9 @@ public class EncounterDialogueManager : MonoBehaviour
 
     public void MoveMade(string name, string abilityName, bool hit, bool critAttack, int damage, float accuraccyAfflication)
     {
+        enemyName = m_enemyRef.GetComponent<EnemyAttributes>().m_enemyName;
+        playerName = m_playerRef.GetComponent<PlayerAttributes>().m_playerName;
+
         if (name == playerName)
             enemyTurn = true;
         else
@@ -110,25 +110,25 @@ public class EncounterDialogueManager : MonoBehaviour
             if (critAttack)
             {
                 if (name == enemyName)
-                    sentenceList.Add("The ability was a critical strike and did: " + damage + " damage to " + playerName);
+                    sentenceList.Add( abilityName + " was a critical strike and did: " + damage + " damage to" + playerName);
                 else
-                    sentenceList.Add("The ability was a critical strike and did: " + damage + " damage to " + enemyName);
+                    sentenceList.Add(abilityName + " was a critical strike and did: " + damage + " damage to " + enemyName);
             }
             else
             {
                 if (name == enemyName)
-                    sentenceList.Add("The ability did: " + damage + " damage to " + playerName);
+                    sentenceList.Add(abilityName + " did: " + damage + " damage to " + playerName);
                 
                 else
-                    sentenceList.Add("The ability did: " + damage + " damage to " + enemyName);
+                    sentenceList.Add(abilityName + " did: " + damage + " damage to " + enemyName);
 
             }
             if (accuraccyAfflication > 0)
             {
                 if (name == enemyName)
-                    sentenceList.Add(abilityName + " lowered " + playerName +"'s accuraccy by " + (accuraccyAfflication * 100));
+                    sentenceList.Add(abilityName + " lowered the " + playerName +"'s accuraccy by " + (accuraccyAfflication * 100));
                 else
-                    sentenceList.Add(abilityName + " lowered " + enemyName + "'s accuraccy by " + (accuraccyAfflication * 100));
+                    sentenceList.Add(abilityName + " lowered the " + enemyName + "'s accuraccy by " + (accuraccyAfflication * 100));
 
             }
             foreach (string line in sentenceList)
@@ -138,17 +138,28 @@ public class EncounterDialogueManager : MonoBehaviour
         }
         else
         {
-            string sentence = name + " used the ability " + abilityName + ". However, it missed.";
+            string sentence = name + " used " + abilityName + ". However, it missed.";
             m_sentences.Enqueue(sentence);
         }
 
     }
 
-    public void PlayerWonEncounter()
+    public void PlayerDidNotLevelUp(int xpGiven)
     {
-        encounterWon = true;
-        m_sentences.Enqueue("Congratulations you won!");
-        m_sentences.Enqueue("Please select a new move!");
+        exitEncounter = true;
+        m_sentences.Enqueue("Congratulations you won and you gained " + xpGiven + " XP!");
+        m_sentences.Enqueue("Goodluck on the rest of your adventure!");
+    }
+
+    public void PlayerLeveledUp(int xpGiven)
+    {
+        gameObject.SetActive(true);
+        fightScene.SetActive(false);
+        optionsScene.SetActive(false);
+        playerLeveledUp = true;
+        m_sentences.Enqueue("Congratulations you won and you gained " + xpGiven + " XP!");
+        m_sentences.Enqueue("Wow you leveled up!");
+        m_sentences.Enqueue("As a reward please select a new move!");
         m_sentences.Enqueue("Beware by selecting a move it will delete the move that was previously in that slot!");
     }
 
@@ -157,7 +168,7 @@ public class EncounterDialogueManager : MonoBehaviour
         gameObject.SetActive(true);
         fightScene.SetActive(false);
         optionsScene.SetActive(false);
-        newAbilitySelected = true;
+        exitEncounter = true;
         m_sentences.Enqueue("Wahoo you learned " + abilityName);
         m_sentences.Enqueue("Goodluck on the rest of your adventure!");
     }

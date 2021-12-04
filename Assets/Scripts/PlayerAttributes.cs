@@ -8,13 +8,23 @@ public class PlayerAttributes : MonoBehaviour
     public string m_playerName;
     public static List<int> playerAbilityIDs;
     public float accuraccyAfflication = 0.0f;
-    public float playerHealth = 100.0f;
+    public int playerStartingHealth = 40;
+    
+
+    public int currentXP;
+    public int playerCurrentHealth;
+    public static int maxLevel = 10;
+    public static int currentLevel;
+    public static LevelUp[] levelUpInfo;
+
     // Start is called before the first frame update
     void Start()
     {
         //This is temporary and will be loaded either with a player pref or txt document
+        LoadPlayerStats();
         LoadPlayerAbilityIDs();
         m_playerName = "Mike";
+        levelUpInfo = LevelUp.PopulateLevelUpArray();
 
     }
 
@@ -59,4 +69,53 @@ public class PlayerAttributes : MonoBehaviour
         PlayerPrefs.SetInt("Player Abilities Saved", 1);
         PlayerPrefs.Save();
     }  
+    public void LoadPlayerStats()
+    {
+        if (PlayerPrefs.GetInt("PlayerSavedStats") != 1)
+        {
+            currentLevel = 1;
+            currentXP = 0;
+            playerCurrentHealth = playerStartingHealth;
+        }
+        else
+        {
+            currentLevel = PlayerPrefs.GetInt("PlayerLevel");
+            currentXP = PlayerPrefs.GetInt("PlayerXP");
+            playerCurrentHealth = PlayerPrefs.GetInt("PlayerHealth");
+        }
+    }
+    public void SavePlayerStats()
+    {
+        PlayerPrefs.SetInt("PlayerSavedStats", 1);
+        PlayerPrefs.SetInt("PlayerLevel", currentLevel);
+        PlayerPrefs.SetInt("PlayerXP", currentXP);
+        PlayerPrefs.SetInt("PlayerHealth", playerCurrentHealth);
+        PlayerPrefs.Save();
+    }
+}
+
+public class LevelUp
+{
+    public int level;
+    public int xpTillNextLevel;
+    public int healthIncrease;
+
+    public LevelUp(int l, int xp, int h)
+    {
+        level = l;
+        xpTillNextLevel = xp;
+        healthIncrease = h;
+    }
+    public static LevelUp[] PopulateLevelUpArray()
+    {
+        LevelUp[] array = new LevelUp[PlayerAttributes.maxLevel];
+
+        for (int i = 1; i < array.Length + 1; i++)
+        {
+            LevelUp levelInfo = new LevelUp(i + 1, i * 10, i * 5);
+            array[i-1] = levelInfo;
+        }
+
+        return array;
+    }
 }

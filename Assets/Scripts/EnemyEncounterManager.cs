@@ -9,15 +9,14 @@ using UnityEngine.UI;
 public class EnemyEncounterManager : MonoBehaviour
 {
     [SerializeField]
-    GameObject m_healthBar, m_DialogueBox;
+    GameObject m_healthBar, m_DialogueBox, StatDisplayManager;
 
 
     public GameObject playerRef, m_optionsScene;
     public EnemyAttributes enemyAttributes;
     public List<Ability> enemyAbilities;
     float minimumAccuracyThreshold = 0.3f;
-    float AIIntelligence = 0.6f;
-    float currentHealth;
+    public float currentHealth;
     bool useAbility = false;
     
     delegate void EnemyMadeMoveDelegate(string enemyName, string abilityName, bool hit, bool critAttack, int damage, float accuraccyAfflication);
@@ -42,7 +41,7 @@ public class EnemyEncounterManager : MonoBehaviour
         enemyMadeMoveDelegate += playerRef.GetComponent<PlayerEncounterManager>().EnemyMadeMove;
        
 
-        playerWonDelegate = m_DialogueBox.GetComponent<EncounterDialogueManager>().PlayerWonEncounter;
+        playerWonDelegate = playerRef.GetComponent<PlayerEncounterManager>().PlayerWonEncounter;
 
         enemyAttributes = GetComponent<EnemyAttributes>();
         enemyAbilities = new List<Ability>();
@@ -74,6 +73,9 @@ public class EnemyEncounterManager : MonoBehaviour
         if (hit)
         {
             currentHealth -= damage;
+            if (currentHealth < 0)
+                currentHealth = 0;
+            StatDisplayManager.GetComponent<CharacterStats>().m_opponentHealth.text = currentHealth.ToString();
             m_healthBar.GetComponent<Slider>().value = currentHealth;
             enemyAttributes.enemyAccuraccyAfflication += accuraccyAfflication;
 
@@ -91,7 +93,7 @@ public class EnemyEncounterManager : MonoBehaviour
         {
             enemyAttributes.playerLowAccuraccyAffliction = true;
         }
-        if (playerRef.GetComponent<PlayerAttributes>().playerHealth < enemyAttributes.playerLowHealthThreshold)
+        if (playerRef.GetComponent<PlayerAttributes>().playerStartingHealth < enemyAttributes.playerLowHealthThreshold)
         {
             enemyAttributes.playerLowHealth = true;
         }
@@ -147,7 +149,7 @@ public class EnemyEncounterManager : MonoBehaviour
         float accuraccyAfflictionUtilityScore = 1.0f;
         float criticalStrikeUtilityScore = 1.0f;
         float intelligenceOffset = UnityEngine.Random.Range(0.0f, 1.0f);
-        int choiceID = (intelligenceOffset <= AIIntelligence) ? 0 : 1;
+        int choiceID = (intelligenceOffset <= GetComponent<EnemyAttributes>().AIIntelligence) ? 0 : 1;
         List<AIMoveValue> scoreArray = new List<AIMoveValue>();
         for (int i = 0; i < 4; i++)
         {

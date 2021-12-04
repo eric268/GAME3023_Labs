@@ -7,7 +7,7 @@ using UnityEngine.UI;
 public class PlayerEncounterManager : MonoBehaviour
 {
     [SerializeField]
-    GameObject m_healthBar, m_DialogueBox;
+    GameObject m_healthBar, m_DialogueBox, StatDisplayManager;
 
     float currentHealth;
     int[] playerMovesID;
@@ -40,11 +40,12 @@ public class PlayerEncounterManager : MonoBehaviour
             EncounterAbilities.LoadAbilities();
 
         playerAttributes = GetComponent<PlayerAttributes>();
-
+        playerAttributes.LoadPlayerStats();
         //Initalize health bar values
-        m_healthBar.GetComponent<Slider>().maxValue = playerAttributes.playerHealth;
-        m_healthBar.GetComponent<Slider>().value = playerAttributes.playerHealth;
-        currentHealth = playerAttributes.playerHealth;
+        m_healthBar.GetComponent<Slider>().maxValue = playerAttributes.playerCurrentHealth;
+        m_healthBar.GetComponent<Slider>().value = playerAttributes.playerCurrentHealth;
+        currentHealth = playerAttributes.playerCurrentHealth;
+        StatDisplayManager.GetComponent<CharacterStats>().m_playerCurrentHealth.text = currentHealth.ToString();
 
         enemyRef = GameObject.Find("Enemy");
         
@@ -170,7 +171,7 @@ public class PlayerEncounterManager : MonoBehaviour
                 damage = ability.damage;
             }
         }
-        playerMadeMoveDelegate(playerAttributes.m_playerName,abilityName, attackHit, critHit, damage, accAfflication);
+        playerMadeMoveDelegate(playerAttributes.m_playerName, abilityName, attackHit, critHit, damage, accAfflication);
     }
 
     public void Button1MouseOver()
@@ -191,9 +192,15 @@ public class PlayerEncounterManager : MonoBehaviour
     }
     void UpdateMoveStatDisplay(Ability ability)
     {
+        float accuraccyDebuff = 0.0f;
+  
+        accuraccyDebuff = playerAttributes.accuraccyAfflication;
+        if (accuraccyDebuff > minimumAccuracyThreshold)
+            accuraccyDebuff = minimumAccuracyThreshold;
+
         damageText.text = "Damage: " + ability.damage;
         critChanceText.text = "Crit Chance: " + (int)(ability.critChance * 100) + "%";
-        accuraccyText.text = "Accuracy: " + (int)(ability.accuracy * 100) + "%";
+        accuraccyText.text = "Accuracy: " + (int)((ability.accuracy - accuraccyDebuff)* 100) + "%";
         accAfflicationText.text = "Acc. Debuff " + (int)(ability.accuraccyAfflication * 100) + "%";
         backButton.SetActive(false);
     }
@@ -228,6 +235,8 @@ public class PlayerEncounterManager : MonoBehaviour
         if (hit)
         {
             currentHealth -= damage;
+            currentHealth = (currentHealth < 0) ? 0 : currentHealth;
+            StatDisplayManager.GetComponent<CharacterStats>().m_playerCurrentHealth.text = currentHealth.ToString();
             m_healthBar.GetComponent<Slider>().value = currentHealth;
             playerAttributes.accuraccyAfflication += accurraccyAfflication;
         }
@@ -245,5 +254,34 @@ public class PlayerEncounterManager : MonoBehaviour
         chooseNewAbilities = true;
         m_DialogueBox.SetActive(false);
         fightScene.SetActive(true);
+    }
+    public void PlayerWonEncounter()
+    {
+        int xpGiven = enemyRef.GetComponent<EnemyAttributes>().xpGivenOnKill;
+        int levelXPNeeded = PlayerAttributes.levelUpInfo[PlayerAttributes.currentLevel-1].xpTillNextLevel;
+
+        if (levelXPNeeded <= xpGiven + GetComponent<PlayerAttributes>().currentXP)
+        {
+            int leftOverXP = xpGiven + GetComponent<PlayerAttributes>().currentXP - levelXPNeeded;
+            StatDisplayManager.GetComponent<CharacterStats>().m_playerXPLimit.text = "/" + PlayerAttributes.levelUpInfo[PlayerAttributes.currentLevel - 1].xpTillNextLevel;
+            GetComponent<PlayerAttributes>().currentXP = leftOverXP;
+            GetComponent<PlayerAttributes>().playerCurrentHealth += PlayerAttributes.levelUpInfo[PlayerAttributes.currentLevel - 1].healthIncrease;
+            PlayerAttributes.currentLevel++;
+
+            StatDisplayManager.GetComponent<CharacterStats>().m_playerLevel.text = PlayerAttributes.currentLevel.ToString();
+            StatDisplayManager.GetComponent<CharacterStats>().m_playerXP.text = GetComponent<PlayerAttributes>().currentXP.ToString();
+            StatDisplayManager.GetComponent<CharacterStats>().m_playerXPLimit.text = PlayerAttributes.levelUpInfo[PlayerAttributes.currentLevel - 1].xpTillNextLevel.ToString();
+
+            GetComponent<PlayerAttributes>().SavePlayerStats();
+
+            m_DialogueBox.GetComponent<EncounterDialogueManager>().PlayerLeveledUp(xpGiven);
+        }
+        else
+        {
+            GetComponent<PlayerAttributes>().currentXP += xpGiven;
+            GetComponent<PlayerAttributes>().SavePlayerStats();
+            StatDisplayManager.GetComponent<CharacterStats>().m_playerXP.text = GetComponent<PlayerAttributes>().currentXP.ToString();
+            m_DialogueBox.GetComponent<EncounterDialogueManager>().PlayerDidNotLevelUp(xpGiven);
+        }
     }
 }
