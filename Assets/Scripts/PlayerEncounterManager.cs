@@ -6,6 +6,10 @@ using UnityEngine.UI;
 [System.Serializable]
 public class PlayerEncounterManager : MonoBehaviour
 {
+    [SerializeField]
+    GameObject m_healthBar;
+
+    float currentHealth;
     int[] playerMovesID;
     bool isPlayersTurn = true;
     float minimumAccuracyThreshold = 0.3f;
@@ -21,7 +25,8 @@ public class PlayerEncounterManager : MonoBehaviour
     PlayerMadeMoveDelegate playerMadeMoveDelegate;
 
     void Start()
-    {
+    { 
+
         playerMovesID = new int[4];
 
         if (PlayerAttributes.playerAbilityIDs == null)
@@ -30,6 +35,11 @@ public class PlayerEncounterManager : MonoBehaviour
             EncounterAbilities.LoadAbilities();
 
         playerAttributes = GetComponent<PlayerAttributes>();
+
+        //Initalize health bar values
+        m_healthBar.GetComponent<Slider>().maxValue = playerAttributes.playerHealth;
+        m_healthBar.GetComponent<Slider>().value = playerAttributes.playerHealth;
+        currentHealth = playerAttributes.playerHealth;
 
         enemyRef = GameObject.Find("Enemy");
         playerMadeMoveDelegate = enemyRef.GetComponent<EnemyEncounterManager>().PlayerMoveRecieved;
@@ -189,7 +199,8 @@ public class PlayerEncounterManager : MonoBehaviour
     {
         if (hit)
         {
-            playerAttributes.playerHealth -= damage;
+            currentHealth -= damage;
+            m_healthBar.GetComponent<Slider>().value = currentHealth;
             playerAttributes.accuraccyAfflication += accurraccyAfflication;
         }
 

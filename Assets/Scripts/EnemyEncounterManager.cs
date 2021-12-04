@@ -3,16 +3,21 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 using System;
+using UnityEngine.UI;
 
 [System.Serializable]
 public class EnemyEncounterManager : MonoBehaviour
 {
+    [SerializeField]
+    GameObject m_healthBar;
+
+
     public GameObject playerRef;
     public EnemyAttributes enemyAttributes;
     public List<Ability> enemyAbilities;
     float minimumAccuracyThreshold = 0.3f;
     float AIIntelligence = 0.6f;
-
+    float currentHealth;
 
     delegate void EnemyMadeMoveDelegate(bool hit, int damage, float accuraccyAfflication);
     EnemyMadeMoveDelegate enemyMadeMoveDelegate;
@@ -20,10 +25,21 @@ public class EnemyEncounterManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        if (PlayerAttributes.playerAbilityIDs == null)
+            PlayerAttributes.LoadPlayerAbilityIDs();
+        if (EncounterAbilities.abilityList == null)
+            EncounterAbilities.LoadAbilities();
+
         playerRef = GameObject.Find("Player");
         enemyMadeMoveDelegate = playerRef.GetComponent<PlayerEncounterManager>().EnemyMadeMove;
         enemyAttributes = GetComponent<EnemyAttributes>();
         enemyAbilities = new List<Ability>();
+
+        //Initalize health bar values
+        m_healthBar.GetComponent<Slider>().maxValue = enemyAttributes.enemyHealth;
+        m_healthBar.GetComponent<Slider>().value = enemyAttributes.enemyHealth;
+        currentHealth = enemyAttributes.enemyHealth;
+
         LoadEnemeyAbilities();
     }
 
@@ -36,7 +52,8 @@ public class EnemyEncounterManager : MonoBehaviour
     {
         if (hit)
         {
-            enemyAttributes.enemyHealth -= damage;
+            currentHealth -= damage;
+            m_healthBar.GetComponent<Slider>().value = currentHealth;
             enemyAttributes.enemyAccuraccyAfflication += accuraccyAfflication;
 
             if (enemyAttributes.enemyHealth < enemyAttributes.enemyLowHealthThreshold)

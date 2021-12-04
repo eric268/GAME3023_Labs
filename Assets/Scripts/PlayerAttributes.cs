@@ -5,6 +5,8 @@ using UnityEngine.SceneManagement;
 
 public class PlayerAttributes : MonoBehaviour
 {
+    [SerializeField]
+
     public static List<int> playerAbilityIDs;
     public float accuraccyAfflication = 0.0f;
     public float playerHealth = 100.0f;

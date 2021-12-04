@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class EnemyAttributes : MonoBehaviour
-{
+{ 
+
     public static List<int> enemyAbilityIDs;
     public float enemyAccuraccyAfflication = 0.0f;
     public float enemyHealth = 100.0f;
