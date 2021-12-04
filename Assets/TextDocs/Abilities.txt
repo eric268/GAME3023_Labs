@@ -6,3 +6,11 @@
 5, Pebbel throw, User throws small pebbel at opponent, 10, 0.01, 1.0, 7, 0
 6, Splash, User splashes water at the enemy, 3, 0.01, 0.95, 6, 0
 7, Sand throw, User throw sand at enemies eyes, 8, 0.2, 0.85,4, 0.12
+8, Quick Strike, User dashes quickly and strikes opponenet, 7, 0.15, 0.95, 1, 0.00
+9, Rough rattled, User vigourously shakes opponent, 2, 0.0, 0.9, 1, 0.15
+10, Vice Grip, User squeezes opponeent, 20, 0.2, 0.45, 1, 0.0
+11, Body Bash, User collides with enemy throwing them backwards, 12, 0.1, 0.85, 1, 0.08
+12, Sideswipe, User hits the enemy from the side surprising them, 9, 0.0, 1.0, 1, 0.12
+13, Karate Chop, User slams their arm into the opponent, 13, 0.1, 0.95, 1, 0.0
+14, Mud throw, User picks up and throws some mud at the opponent, 4, 0.0, 0.95, 1, 0.1
+15, Chomp, User leaves a vicious deep bite on the opponent, 20, 0.05, 0.7, 2, 0.05

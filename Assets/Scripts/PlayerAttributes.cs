@@ -28,10 +28,35 @@ public class PlayerAttributes : MonoBehaviour
     }
     public static void LoadPlayerAbilityIDs()
     {
-        playerAbilityIDs = new List<int>();
-        playerAbilityIDs.Add(0);
-        playerAbilityIDs.Add(4);
-        playerAbilityIDs.Add(5);
-        playerAbilityIDs.Add(7);
+        playerAbilityIDs = new List<int>() {0,0,0,0};
+        if (PlayerPrefs.GetInt("Player Abilities Saved") != 1)
+        {
+            playerAbilityIDs[0] = 0;
+            playerAbilityIDs[1] = 4;
+            playerAbilityIDs[2] = 5;
+            playerAbilityIDs[3] = 7;
+            SavePlayerAbilities();
+        }
+        else
+        {
+            LoadPlayerAbilities();
+        } 
     }
+    public static void LoadPlayerAbilities()
+    {
+        playerAbilityIDs[0] = PlayerPrefs.GetInt("Player Ability 1");
+        playerAbilityIDs[1] = PlayerPrefs.GetInt("Player Ability 2");
+        playerAbilityIDs[2] = PlayerPrefs.GetInt("Player Ability 3");
+        playerAbilityIDs[3] = PlayerPrefs.GetInt("Player Ability 4");
+        PlayerPrefs.Save();
+    }
+    public static void SavePlayerAbilities()
+    {
+        PlayerPrefs.SetInt("Player Ability 1", playerAbilityIDs[0]);
+        PlayerPrefs.SetInt("Player Ability 2", playerAbilityIDs[1]);
+        PlayerPrefs.SetInt("Player Ability 3", playerAbilityIDs[2]);
+        PlayerPrefs.SetInt("Player Ability 4", playerAbilityIDs[3]);
+        PlayerPrefs.SetInt("Player Abilities Saved", 1);
+        PlayerPrefs.Save();
+    }  
 }

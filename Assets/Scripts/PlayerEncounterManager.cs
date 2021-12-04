@@ -84,6 +84,7 @@ public class PlayerEncounterManager : MonoBehaviour
         {
             PlayerAttributes.playerAbilityIDs[0] = NewAbilityScript.newAbilityID[0];
             newMoveSelectedDelegate(move1Ability.abilityName);
+            PlayerAttributes.SavePlayerAbilities();
         }
         else if (isPlayersTurn)
         {
@@ -98,6 +99,7 @@ public class PlayerEncounterManager : MonoBehaviour
         {
             PlayerAttributes.playerAbilityIDs[1] = NewAbilityScript.newAbilityID[1];
             newMoveSelectedDelegate(move2Ability.abilityName);
+            PlayerAttributes.SavePlayerAbilities();
         }
         else if(isPlayersTurn)
         {
@@ -111,6 +113,7 @@ public class PlayerEncounterManager : MonoBehaviour
         {
             PlayerAttributes.playerAbilityIDs[2] = NewAbilityScript.newAbilityID[2];
             newMoveSelectedDelegate(move3Ability.abilityName);
+            PlayerAttributes.SavePlayerAbilities();
         }
         else if(isPlayersTurn)
         {
@@ -124,6 +127,7 @@ public class PlayerEncounterManager : MonoBehaviour
         {
             PlayerAttributes.playerAbilityIDs[3] = NewAbilityScript.newAbilityID[3];
             newMoveSelectedDelegate(move4Ability.abilityName);
+            PlayerAttributes.SavePlayerAbilities();
         }
         else if(isPlayersTurn)
         {
@@ -231,15 +235,15 @@ public class PlayerEncounterManager : MonoBehaviour
 
     public void LoadNewAbilities()
     {
-        Debug.Log("New Abilities Loaded");
-        for (int i = 0; i < 4; i++)
-        {
-            LoadButtonAbility(ref move1Button, ref move1Ability, NewAbilityScript.newAbilityID[i]);
-        }
+        NewAbilityScript.GenerateAbilityListPlayerDoesntHave();
+        
+        LoadButtonAbility(ref move1Button, ref move1Ability, NewAbilityScript.newAbilityID[0]);
+        LoadButtonAbility(ref move2Button, ref move2Ability, NewAbilityScript.newAbilityID[1]);
+        LoadButtonAbility(ref move3Button, ref move3Ability, NewAbilityScript.newAbilityID[2]);
+        LoadButtonAbility(ref move4Button, ref move4Ability, NewAbilityScript.newAbilityID[3]);
+
         chooseNewAbilities = true;
         m_DialogueBox.SetActive(false);
         fightScene.SetActive(true);
-
-
     }
 }

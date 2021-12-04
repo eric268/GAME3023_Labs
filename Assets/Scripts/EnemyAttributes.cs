@@ -5,9 +5,11 @@ using UnityEngine;
 
 public class EnemyAttributes : MonoBehaviour
 {
+    [SerializeField]
     public string m_enemyName;
     public static List<int> enemyAbilityIDs;
     public float enemyAccuraccyAfflication = 0.0f;
+    [SerializeField]
     public float enemyHealth = 10.0f;
     
     //The higher the value the better the moves the AI will make
@@ -34,9 +36,17 @@ public class EnemyAttributes : MonoBehaviour
     }
     void LoadEnemyAbilityIDs()
     {
-        enemyAbilityIDs.Add(1);
-        enemyAbilityIDs.Add(3);
-        enemyAbilityIDs.Add(4);
-        enemyAbilityIDs.Add(6);
+        int abilitiesChosen = 0;
+
+        while(abilitiesChosen < 4)
+        {
+            int randomAbilityIndex = Random.Range(0, EncounterAbilities.totalNumberOfAbilities);
+           
+            if (!enemyAbilityIDs.Contains(randomAbilityIndex))
+            {
+                abilitiesChosen++;
+                enemyAbilityIDs.Add(randomAbilityIndex);
+            }
+        }
     }
 }

@@ -6,19 +6,20 @@ public class NewAbilityScript : MonoBehaviour
 {
     public static List<int> newAbilityID;
 
-    // Start is called before the first frame update
-    void Start()
+    public static void GenerateAbilityListPlayerDoesntHave()
     {
         newAbilityID = new List<int>();
-        newAbilityID.Add(1);
-        newAbilityID.Add(2);
-        newAbilityID.Add(3);
-        newAbilityID.Add(6);
-    }
+        int abilitiesFound = 0;
 
-    // Update is called once per frame
-    void Update()
-    {
-        
+        while (abilitiesFound < 4)
+        {
+            int randomAbilityID = Random.Range(0, EncounterAbilities.totalNumberOfAbilities);
+            
+            if (!PlayerAttributes.playerAbilityIDs.Contains(randomAbilityID) && !newAbilityID.Contains(randomAbilityID))
+            {
+                newAbilityID.Add(randomAbilityID);
+                abilitiesFound++;
+            }
+        }
     }
 }

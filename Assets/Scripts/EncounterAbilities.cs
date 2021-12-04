@@ -23,6 +23,8 @@ public class EncounterAbilities : MonoBehaviour
 {
     public static List<Ability> abilityList;
 
+    public static int totalNumberOfAbilities = 16;
+
     public void Start()
     {
         LoadAbilities();
