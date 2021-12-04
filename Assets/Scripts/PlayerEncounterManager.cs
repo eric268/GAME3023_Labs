@@ -20,15 +20,18 @@ public class PlayerEncounterManager : MonoBehaviour
     public TextMeshProUGUI damageText, critChanceText, accuraccyText, accAfflicationText;
     public GameObject enemyRef;
     PlayerAttributes playerAttributes;
+    bool chooseNewAbilities = false;
 
     // Start is called before the first frame update
 
     delegate void PlayerMadeMoveDelegate(string playerName, string abilityName, bool attackHit, bool critAttack, int damage, float accuraccyAfflication);
     PlayerMadeMoveDelegate playerMadeMoveDelegate;
 
+    delegate void NewMoveSelectedDelegate(string abilityName);
+    NewMoveSelectedDelegate newMoveSelectedDelegate;
+
     void Start()
     { 
-
         playerMovesID = new int[4];
 
         if (PlayerAttributes.playerAbilityIDs == null)
@@ -44,8 +47,11 @@ public class PlayerEncounterManager : MonoBehaviour
         currentHealth = playerAttributes.playerHealth;
 
         enemyRef = GameObject.Find("Enemy");
-        playerMadeMoveDelegate = enemyRef.GetComponent<EnemyEncounterManager>().PlayerMoveRecieved;
-        playerMadeMoveDelegate += m_DialogueBox.GetComponent<EncounterDialogueManager>().MoveMade;
+        
+        playerMadeMoveDelegate = m_DialogueBox.GetComponent<EncounterDialogueManager>().MoveMade;
+        playerMadeMoveDelegate += enemyRef.GetComponent<EnemyEncounterManager>().PlayerMoveRecieved;
+
+        newMoveSelectedDelegate = m_DialogueBox.GetComponent<EncounterDialogueManager>().NewAbilitySelected;
 
         LoadButtonAbility(ref move1Button, ref move1Ability, PlayerAttributes.playerAbilityIDs[0]);
         LoadButtonAbility(ref move2Button, ref move2Ability, PlayerAttributes.playerAbilityIDs[1]);
@@ -74,7 +80,12 @@ public class PlayerEncounterManager : MonoBehaviour
 
     void Move1ButtonPressed()
     {
-        if (isPlayersTurn)
+        if (chooseNewAbilities)
+        {
+            PlayerAttributes.playerAbilityIDs[0] = NewAbilityScript.newAbilityID[0];
+            newMoveSelectedDelegate(move1Ability.abilityName);
+        }
+        else if (isPlayersTurn)
         {
             isPlayersTurn = false;
             UseAbility(move1Ability, "Player");
@@ -83,7 +94,12 @@ public class PlayerEncounterManager : MonoBehaviour
     }
     void Move2ButtonPressed()
     {
-        if (isPlayersTurn)
+        if (chooseNewAbilities)
+        {
+            PlayerAttributes.playerAbilityIDs[1] = NewAbilityScript.newAbilityID[1];
+            newMoveSelectedDelegate(move2Ability.abilityName);
+        }
+        else if(isPlayersTurn)
         {
             isPlayersTurn = false;
             UseAbility(move2Ability, "Player");
@@ -91,7 +107,12 @@ public class PlayerEncounterManager : MonoBehaviour
     }
     void Move3ButtonPressed()
     {
-        if (isPlayersTurn)
+        if (chooseNewAbilities)
+        {
+            PlayerAttributes.playerAbilityIDs[2] = NewAbilityScript.newAbilityID[2];
+            newMoveSelectedDelegate(move3Ability.abilityName);
+        }
+        else if(isPlayersTurn)
         {
             isPlayersTurn = false;
             UseAbility(move3Ability, "Player");
@@ -99,7 +120,12 @@ public class PlayerEncounterManager : MonoBehaviour
     }
     void Move4ButtonPressed()
     {
-        if (isPlayersTurn)
+        if (chooseNewAbilities)
+        {
+            PlayerAttributes.playerAbilityIDs[3] = NewAbilityScript.newAbilityID[3];
+            newMoveSelectedDelegate(move4Ability.abilityName);
+        }
+        else if(isPlayersTurn)
         {
             isPlayersTurn = false;
             UseAbility(move4Ability, "Player");
@@ -201,5 +227,19 @@ public class PlayerEncounterManager : MonoBehaviour
             m_healthBar.GetComponent<Slider>().value = currentHealth;
             playerAttributes.accuraccyAfflication += accurraccyAfflication;
         }
+    }
+
+    public void LoadNewAbilities()
+    {
+        Debug.Log("New Abilities Loaded");
+        for (int i = 0; i < 4; i++)
+        {
+            LoadButtonAbility(ref move1Button, ref move1Ability, NewAbilityScript.newAbilityID[i]);
+        }
+        chooseNewAbilities = true;
+        m_DialogueBox.SetActive(false);
+        fightScene.SetActive(true);
+
+
     }
 }

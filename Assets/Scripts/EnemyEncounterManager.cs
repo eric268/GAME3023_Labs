@@ -23,6 +23,11 @@ public class EnemyEncounterManager : MonoBehaviour
     delegate void EnemyMadeMoveDelegate(string enemyName, string abilityName, bool hit, bool critAttack, int damage, float accuraccyAfflication);
     EnemyMadeMoveDelegate enemyMadeMoveDelegate;
 
+    delegate void PlayerWonDelegate();
+    PlayerWonDelegate playerWonDelegate;
+
+
+
     // Start is called before the first frame update
     void Start()
     {
@@ -32,8 +37,13 @@ public class EnemyEncounterManager : MonoBehaviour
             EncounterAbilities.LoadAbilities();
 
         playerRef = GameObject.Find("Player");
-        enemyMadeMoveDelegate = playerRef.GetComponent<PlayerEncounterManager>().EnemyMadeMove;
-        enemyMadeMoveDelegate += m_DialogueBox.GetComponent<EncounterDialogueManager>().MoveMade;
+
+        enemyMadeMoveDelegate = m_DialogueBox.GetComponent<EncounterDialogueManager>().MoveMade;
+        enemyMadeMoveDelegate += playerRef.GetComponent<PlayerEncounterManager>().EnemyMadeMove;
+       
+
+        playerWonDelegate = m_DialogueBox.GetComponent<EncounterDialogueManager>().PlayerWonEncounter;
+
         enemyAttributes = GetComponent<EnemyAttributes>();
         enemyAbilities = new List<Ability>();
 
@@ -42,18 +52,22 @@ public class EnemyEncounterManager : MonoBehaviour
         m_healthBar.GetComponent<Slider>().value = enemyAttributes.enemyHealth;
         currentHealth = enemyAttributes.enemyHealth;
 
+        Debug.Log("Enemy health: " + currentHealth);
+
         LoadEnemeyAbilities();
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (useAbility && m_optionsScene.activeInHierarchy)
-        {
-            UseAbility(ChooseEnemyAttack(), "Enemy");
-            m_DialogueBox.SetActive(true);
-        }
     }
+
+    public void MakeEnemyUseAbility()
+    {
+        UseAbility(ChooseEnemyAttack(), "Enemy");
+        m_DialogueBox.SetActive(true);
+    }
+
     public void PlayerMoveRecieved(string name, string abilityName, bool hit,bool critAttack, int damage, float accuraccyAfflication)
     {
         useAbility = true;
@@ -62,6 +76,11 @@ public class EnemyEncounterManager : MonoBehaviour
             currentHealth -= damage;
             m_healthBar.GetComponent<Slider>().value = currentHealth;
             enemyAttributes.enemyAccuraccyAfflication += accuraccyAfflication;
+
+            if (currentHealth <=0)
+            {
+                playerWonDelegate();
+            }
 
             if (enemyAttributes.enemyHealth < enemyAttributes.enemyLowHealthThreshold)
             {
@@ -107,6 +126,7 @@ public class EnemyEncounterManager : MonoBehaviour
                 damage = (int)ability.damage;
             }
         }
+        m_optionsScene.SetActive(false);
         enemyMadeMoveDelegate(enemyAttributes.m_enemyName, abilityName, attackHit, critHit, damage, accAfflication);
 
     }
