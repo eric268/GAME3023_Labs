@@ -106,7 +106,7 @@ public class EnemyEncounterManager : MonoBehaviour
         int damage = 0;
         bool critHit = false;
         float accAfflication = 0;
-        string abilityName = "";
+        string abilityName = ability.abilityName;
 
         float ranAccuraccy = UnityEngine.Random.Range(0.0f, 1.0f);
         float enemyAccuracy = (ability.accuracy - enemyAttributes.enemyAccuraccyAfflication);
@@ -116,7 +116,6 @@ public class EnemyEncounterManager : MonoBehaviour
         {
             attackHit = true;
             accAfflication = ability.accuraccyAfflication;
-            abilityName = ability.abilityName;
             float ranCrit = UnityEngine.Random.Range(0.0f, 1.0f);
             if (ranCrit <= ability.critChance)
             {

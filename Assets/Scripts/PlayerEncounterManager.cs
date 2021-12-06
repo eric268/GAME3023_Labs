@@ -21,6 +21,8 @@ public class PlayerEncounterManager : MonoBehaviour
     public GameObject enemyRef;
     PlayerAttributes playerAttributes;
     bool chooseNewAbilities = false;
+    public bool playerAccuracyAtLowestValue = false;
+    public bool playerLeveledUpMultipleLevels = false;
 
     // Start is called before the first frame update
 
@@ -149,17 +151,22 @@ public class PlayerEncounterManager : MonoBehaviour
         bool critHit = false;
         int damage = 0;
         float accAfflication = 0;
-        string abilityName = "";
+        string abilityName = ability.abilityName;
 
         float ranAccuraccy = Random.Range(0.0f, 1.0f);
-        float enemyAccuracy = (ability.accuracy - playerAttributes.accuraccyAfflication);
-        enemyAccuracy = (enemyAccuracy <= minimumAccuracyThreshold) ? minimumAccuracyThreshold : enemyAccuracy;
+        float playerAccuracy = (ability.accuracy - playerAttributes.accuraccyAfflication);
+        if (playerAccuracy <= minimumAccuracyThreshold)
+        {
+            playerAccuracy = minimumAccuracyThreshold;
+            playerAccuracyAtLowestValue = true;
+        }
+
         
-        if (ranAccuraccy <= enemyAccuracy)
+        if (ranAccuraccy <= playerAccuracy)
         {
             float ranCrit = Random.Range(0.0f, 1.0f);
             attackHit = true;
-            abilityName = ability.abilityName;
+
             accAfflication = ability.accuraccyAfflication;
             if (ranCrit <= ability.critChance)
             {
@@ -193,14 +200,21 @@ public class PlayerEncounterManager : MonoBehaviour
     void UpdateMoveStatDisplay(Ability ability)
     {
         float accuraccyDebuff = 0.0f;
-  
+
+
+        float accuracy = ability.accuracy;
         accuraccyDebuff = playerAttributes.accuraccyAfflication;
-        if (accuraccyDebuff > minimumAccuracyThreshold)
-            accuraccyDebuff = minimumAccuracyThreshold;
+        if (ability.accuracy - accuraccyDebuff < minimumAccuracyThreshold)
+            accuracy = minimumAccuracyThreshold;
+        else
+            accuracy -= accuraccyDebuff;
 
         damageText.text = "Damage: " + ability.damage;
         critChanceText.text = "Crit Chance: " + (int)(ability.critChance * 100) + "%";
-        accuraccyText.text = "Accuracy: " + (int)((ability.accuracy - accuraccyDebuff)* 100) + "%";
+        if (!chooseNewAbilities)
+            accuraccyText.text = "Accuracy: " + (int)((accuracy)* 100) + "%";
+        else
+            accuraccyText.text = "Accuracy: " + (int)((ability.accuracy) * 100) + "%";
         accAfflicationText.text = "Acc. Debuff " + (int)(ability.accuraccyAfflication * 100) + "%";
         backButton.SetActive(false);
     }
@@ -239,6 +253,8 @@ public class PlayerEncounterManager : MonoBehaviour
             StatDisplayManager.GetComponent<CharacterStats>().m_playerCurrentHealth.text = currentHealth.ToString();
             m_healthBar.GetComponent<Slider>().value = currentHealth;
             playerAttributes.accuraccyAfflication += accurraccyAfflication;
+            if (currentHealth <= 0)
+                m_DialogueBox.GetComponent<EncounterDialogueManager>().PlayerLostEncounter();
         }
     }
 
@@ -260,21 +276,22 @@ public class PlayerEncounterManager : MonoBehaviour
         int xpGiven = enemyRef.GetComponent<EnemyAttributes>().xpGivenOnKill;
         int levelXPNeeded = PlayerAttributes.levelUpInfo[PlayerAttributes.currentLevel-1].xpTillNextLevel;
 
-        if (levelXPNeeded <= xpGiven + GetComponent<PlayerAttributes>().currentXP)
+        if (PlayerAttributes.currentLevel >= 10)
         {
-            int leftOverXP = xpGiven + GetComponent<PlayerAttributes>().currentXP - levelXPNeeded;
-            StatDisplayManager.GetComponent<CharacterStats>().m_playerXPLimit.text = "/" + PlayerAttributes.levelUpInfo[PlayerAttributes.currentLevel - 1].xpTillNextLevel;
-            GetComponent<PlayerAttributes>().currentXP = leftOverXP;
-            GetComponent<PlayerAttributes>().playerCurrentHealth += PlayerAttributes.levelUpInfo[PlayerAttributes.currentLevel - 1].healthIncrease;
-            PlayerAttributes.currentLevel++;
-
-            StatDisplayManager.GetComponent<CharacterStats>().m_playerLevel.text = PlayerAttributes.currentLevel.ToString();
-            StatDisplayManager.GetComponent<CharacterStats>().m_playerXP.text = GetComponent<PlayerAttributes>().currentXP.ToString();
-            StatDisplayManager.GetComponent<CharacterStats>().m_playerXPLimit.text = PlayerAttributes.levelUpInfo[PlayerAttributes.currentLevel - 1].xpTillNextLevel.ToString();
+            m_DialogueBox.GetComponent<EncounterDialogueManager>().PlayerWonMaxLevel();
+        }
+        else if (levelXPNeeded <= xpGiven + GetComponent<PlayerAttributes>().currentXP)
+        {
+            int leftOverXP = PlayerLeveledUp(xpGiven, levelXPNeeded);
 
             GetComponent<PlayerAttributes>().SavePlayerStats();
 
             m_DialogueBox.GetComponent<EncounterDialogueManager>().PlayerLeveledUp(xpGiven);
+
+            if (leftOverXP >= PlayerAttributes.levelUpInfo[PlayerAttributes.currentLevel -1].xpTillNextLevel)
+            {
+                playerLeveledUpMultipleLevels = true;
+            }
         }
         else
         {
@@ -283,5 +300,46 @@ public class PlayerEncounterManager : MonoBehaviour
             StatDisplayManager.GetComponent<CharacterStats>().m_playerXP.text = GetComponent<PlayerAttributes>().currentXP.ToString();
             m_DialogueBox.GetComponent<EncounterDialogueManager>().PlayerDidNotLevelUp(xpGiven);
         }
+    }
+
+    public int PlayerLeveledUp(int xPGained, int xpNeeded)
+    {
+        int leftOverXP = xPGained + GetComponent<PlayerAttributes>().currentXP - xpNeeded;
+        StatDisplayManager.GetComponent<CharacterStats>().m_playerXPLimit.text = PlayerAttributes.levelUpInfo[PlayerAttributes.currentLevel - 1].xpTillNextLevel.ToString();
+        GetComponent<PlayerAttributes>().currentXP = leftOverXP;
+        GetComponent<PlayerAttributes>().playerCurrentHealth += PlayerAttributes.levelUpInfo[PlayerAttributes.currentLevel - 1].healthIncrease;
+        currentHealth += PlayerAttributes.levelUpInfo[PlayerAttributes.currentLevel - 1].healthIncrease;
+        PlayerAttributes.currentLevel++;
+
+        StatDisplayManager.GetComponent<CharacterStats>().m_playerLevel.text = PlayerAttributes.currentLevel.ToString();
+        StatDisplayManager.GetComponent<CharacterStats>().m_playerXP.text = GetComponent<PlayerAttributes>().currentXP.ToString() + "/";
+        StatDisplayManager.GetComponent<CharacterStats>().m_playerXPLimit.text = PlayerAttributes.levelUpInfo[PlayerAttributes.currentLevel - 1].xpTillNextLevel.ToString();
+        StatDisplayManager.GetComponent<CharacterStats>().m_playerCurrentHealth.text = currentHealth.ToString();
+        m_healthBar.GetComponent<Slider>().maxValue = playerAttributes.playerCurrentHealth;
+        m_healthBar.GetComponent<Slider>().value = currentHealth;
+
+        return leftOverXP;
+    }
+
+    public void PlayerLeveledUpAgain()
+    {
+        int currentXP = GetComponent<PlayerAttributes>().currentXP;
+        int xpNeeded = PlayerAttributes.levelUpInfo[PlayerAttributes.currentLevel - 1].xpTillNextLevel;
+        
+        if (xpNeeded <= currentXP)
+        {
+            int leftOverXP = PlayerLeveledUp(0, xpNeeded);
+
+            if (PlayerAttributes.levelUpInfo[PlayerAttributes.currentLevel - 1].xpTillNextLevel >= leftOverXP)
+                playerLeveledUpMultipleLevels = false;
+            m_DialogueBox.GetComponent<EncounterDialogueManager>().PlayerLeveledUpMultipleLevels();
+        }
+        else
+        {
+            GetComponent<PlayerAttributes>().SavePlayerStats();
+            StatDisplayManager.GetComponent<CharacterStats>().m_playerXP.text = GetComponent<PlayerAttributes>().currentXP.ToString();
+            m_DialogueBox.GetComponent<EncounterDialogueManager>().PlayerEndedLevelingUp();
+        }
+       
     }
 }

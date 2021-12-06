@@ -40,7 +40,7 @@ public class EncounterDialogueManager : MonoBehaviour
     void Start()
     {
         m_sentences = new Queue<string>();
-        m_timeBetweenSentences = 2.5f;
+        m_timeBetweenSentences = 2.25f;
         m_timeCounter = m_timeBetweenSentences;
         startDisplayingMessages = false;
         gameObject.SetActive(false);
@@ -110,9 +110,9 @@ public class EncounterDialogueManager : MonoBehaviour
             if (critAttack)
             {
                 if (name == enemyName)
-                    sentenceList.Add( abilityName + " was a critical strike and did: " + damage + " damage to" + playerName);
+                    sentenceList.Add(abilityName + " was a critical strike and did: " + damage + " damage to " + playerName);
                 else
-                    sentenceList.Add(abilityName + " was a critical strike and did: " + damage + " damage to " + enemyName);
+                    sentenceList.Add(abilityName + " was a critical strike and did: " + damage + " damage to the " + enemyName);
             }
             else
             {
@@ -120,15 +120,24 @@ public class EncounterDialogueManager : MonoBehaviour
                     sentenceList.Add(abilityName + " did: " + damage + " damage to " + playerName);
                 
                 else
-                    sentenceList.Add(abilityName + " did: " + damage + " damage to " + enemyName);
+                    sentenceList.Add(abilityName + " did: " + damage + " damage to the " + enemyName);
 
             }
             if (accuraccyAfflication > 0)
             {
                 if (name == enemyName)
-                    sentenceList.Add(abilityName + " lowered the " + playerName +"'s accuraccy by " + (accuraccyAfflication * 100));
+                    sentenceList.Add(abilityName + " lowered " + playerName + "'s accuracy by " + (accuraccyAfflication * 100));
                 else
-                    sentenceList.Add(abilityName + " lowered the " + enemyName + "'s accuraccy by " + (accuraccyAfflication * 100));
+                {
+                    if (m_playerRef.GetComponent<PlayerEncounterManager>().playerAccuracyAtLowestValue)
+                    {
+                        sentenceList.Add(abilityName + " attempted to lower " + playerName + "'s accuracy");
+                        sentenceList.Add("However, " + playerName + "'s accuracy is already at its lowest possible value");
+                    }
+                    else
+                        sentenceList.Add(abilityName + " lowered the " + enemyName + "'s accuracy by " + (accuraccyAfflication * 100));
+                }
+
 
             }
             foreach (string line in sentenceList)
@@ -138,7 +147,7 @@ public class EncounterDialogueManager : MonoBehaviour
         }
         else
         {
-            string sentence = name + " used " + abilityName + ". However, it missed.";
+            string sentence = name + " used the ability " + abilityName + ". However, it missed.";
             m_sentences.Enqueue(sentence);
         }
 
@@ -151,25 +160,72 @@ public class EncounterDialogueManager : MonoBehaviour
         m_sentences.Enqueue("Goodluck on the rest of your adventure!");
     }
 
-    public void PlayerLeveledUp(int xpGiven)
+    public void PlayerEndedLevelingUp()
+    {
+        m_sentences.Enqueue("Be sure to use your new skills and higher health to fight more challenging enemies!");
+        m_sentences.Enqueue("Goodluck on the rest of your adventure!");
+    }
+
+    void DisplayDialogueUI()
     {
         gameObject.SetActive(true);
         fightScene.SetActive(false);
         optionsScene.SetActive(false);
+    }
+
+    public void PlayerLeveledUp(int xpGiven)
+    {
+        DisplayDialogueUI();
         playerLeveledUp = true;
         m_sentences.Enqueue("Congratulations you won and you gained " + xpGiven + " XP!");
         m_sentences.Enqueue("Wow you leveled up!");
+        m_sentences.Enqueue("You gained " + PlayerAttributes.levelUpInfo[PlayerAttributes.currentLevel - 2].healthIncrease + "health!");
         m_sentences.Enqueue("As a reward please select a new move!");
         m_sentences.Enqueue("Beware by selecting a move it will delete the move that was previously in that slot!");
     }
 
+    public void PlayerLeveledUpMultipleLevels()
+    {
+        DisplayDialogueUI();
+        playerLeveledUp = true;
+        m_sentences.Enqueue("Wow you leveled up again!");
+        m_sentences.Enqueue("You gained " + PlayerAttributes.levelUpInfo[PlayerAttributes.currentLevel - 2].healthIncrease + " health!");
+        m_sentences.Enqueue("Again please select a new move!");
+        m_sentences.Enqueue("Remember selecting a move will delete the move that was previously in that slot!");
+    }
+
     public void NewAbilitySelected(string abilityName)
     {
-        gameObject.SetActive(true);
-        fightScene.SetActive(false);
-        optionsScene.SetActive(false);
-        exitEncounter = true;
+        DisplayDialogueUI();
         m_sentences.Enqueue("Wahoo you learned " + abilityName);
-        m_sentences.Enqueue("Goodluck on the rest of your adventure!");
+        if (!m_playerRef.GetComponent<PlayerEncounterManager>().playerLeveledUpMultipleLevels)
+        {
+            exitEncounter = true;
+            m_sentences.Enqueue("Goodluck on the rest of your adventure!");
+        }
+        else
+        {
+            m_playerRef.GetComponent<PlayerEncounterManager>().PlayerLeveledUpAgain();
+        }
+
     }
+
+    public void PlayerWonMaxLevel()
+    {
+        DisplayDialogueUI();
+        playerLeveledUp = true;
+        m_sentences.Enqueue("Congratulations you won however you are already at the max level!");
+        m_sentences.Enqueue("As a reward please select a new move!");
+        m_sentences.Enqueue("Beware by selecting a move it will delete the move that was previously in that slot!");
+    }
+
+    public void PlayerLostEncounter()
+    {
+        DisplayDialogueUI();
+        exitEncounter = true;
+        m_sentences.Enqueue("You were defeated!");
+        m_sentences.Enqueue("You will now be returned to the Overworld.");
+        m_sentences.Enqueue("Better luck on your next encounter!");
+    }
+
 }

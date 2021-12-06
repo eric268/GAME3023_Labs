@@ -15,5 +15,5 @@ MonoBehaviour:
   name: Dragon
   spriteIcon: {fileID: 21300000, guid: 661cb528a72b9a84abd7c93b2f50f229, type: 3}
   health: 150
-  Intelligence: 1
+  Intelligence: 0.9
   xpGiven: 100

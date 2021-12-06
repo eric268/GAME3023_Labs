@@ -15,5 +15,5 @@ MonoBehaviour:
   name: Ogre
   spriteIcon: {fileID: 21300000, guid: dc32aa9314d1f46459bd8d4b79511292, type: 3}
   health: 75
-  Intelligence: 0.5
+  Intelligence: 0.35
   xpGiven: 50

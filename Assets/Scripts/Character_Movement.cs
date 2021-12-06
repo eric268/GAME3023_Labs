@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 using UnityEngine;
 
 public class Character_Movement : MonoBehaviour
@@ -31,13 +32,18 @@ public class Character_Movement : MonoBehaviour
         if (!m_animator)
             Debug.LogError("Main Character animator not found");
 
-
+        GetComponent<SaveLoadPlayerPos>().LoadPlayerPosition();
     }
 
     // Update is called once per frame
     void FixedUpdate()
     {
-        
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            GetComponent<SaveLoadPlayerPos>().SavePlayerPosition();
+            SceneManager.LoadScene("RandomEncounterScene");
+        }
+
         float x = Input.GetAxisRaw("Horizontal");
         float y = Input.GetAxisRaw("Vertical");
 
@@ -76,10 +82,7 @@ public class Character_Movement : MonoBehaviour
     }
     public void PlayerPosLoad()
     {
-        float xPos = PlayerPrefs.GetFloat("X Position");
-        float yPos = PlayerPrefs.GetFloat("Y Position");
 
-        transform.position = new Vector3(xPos,yPos,transform.position.z);
     }
 
     void ResetAnimBools(string trueBool)

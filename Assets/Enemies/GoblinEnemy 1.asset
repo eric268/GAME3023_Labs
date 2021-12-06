@@ -15,5 +15,5 @@ MonoBehaviour:
   name: Goblin
   spriteIcon: {fileID: 21300000, guid: fc70cdfc003fcfa42b95f0a837408e60, type: 3}
   health: 50
-  Intelligence: 0.6
+  Intelligence: 0.75
   xpGiven: 25

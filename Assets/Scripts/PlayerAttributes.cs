@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+
 public class PlayerAttributes : MonoBehaviour
 {
     public string m_playerName;
     public static List<int> playerAbilityIDs;
     public float accuraccyAfflication = 0.0f;
-    public int playerStartingHealth = 40;
+    public int playerStartingHealth = 30;
     
 
     public int currentXP;
@@ -31,10 +32,7 @@ public class PlayerAttributes : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.E))
-        {
-            SceneManager.LoadScene("RandomEncounterScene");
-        }
+
     }
     public static void LoadPlayerAbilityIDs()
     {
@@ -112,7 +110,7 @@ public class LevelUp
 
         for (int i = 1; i < array.Length + 1; i++)
         {
-            LevelUp levelInfo = new LevelUp(i + 1, i * 10, i * 5);
+            LevelUp levelInfo = new LevelUp(i + 1, i * 5, i * 4);
             array[i-1] = levelInfo;
         }
 
