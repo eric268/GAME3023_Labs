@@ -179,7 +179,7 @@ public class EncounterDialogueManager : MonoBehaviour
         playerLeveledUp = true;
         m_sentences.Enqueue("Congratulations you won and you gained " + xpGiven + " XP!");
         m_sentences.Enqueue("Wow you leveled up!");
-        m_sentences.Enqueue("You gained " + PlayerAttributes.levelUpInfo[PlayerAttributes.currentLevel - 2].healthIncrease + "health!");
+        m_sentences.Enqueue("You gained " + PlayerAttributes.levelUpInfo[PlayerAttributes.currentLevel - 2].healthIncrease + " health!");
         m_sentences.Enqueue("As a reward please select a new move!");
         m_sentences.Enqueue("Beware by selecting a move it will delete the move that was previously in that slot!");
     }
