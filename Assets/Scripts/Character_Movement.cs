@@ -85,11 +85,20 @@ public class Character_Movement : MonoBehaviour
                     Debug.Log("the odds are right");
 
                     GetComponent<SaveLoadPlayerPos>().SavePlayerPosition();
-                    SceneManager.LoadScene("RandomEncounterScene");
+                    StartCoroutine(BattleEntrySequence());
                 }
             }
         }
         
+    }
+    IEnumerator BattleEntrySequence()
+    {
+        Debug.Log("entering battle");
+        PlayerEvents events = FindObjectOfType<PlayerEvents>();
+        events.onEnterEncounterEvent.Invoke();
+        MusicManager.Instance.PlayTrack(MusicManager.TrackID.Battle);
+        yield return new WaitForSeconds(1f);
+        SceneManager.LoadScene("RandomEncounterScene");
     }
     public void PlayerPosLoad()
     {

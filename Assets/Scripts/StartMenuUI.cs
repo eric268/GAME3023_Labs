@@ -7,6 +7,8 @@ public class StartMenuUI : MonoBehaviour
 {
     public void OnStartButtonPressed()
     {
+        PlayerEvents events = FindObjectOfType<PlayerEvents>();
+        events.onEnterMainEvent.Invoke();
         SceneManager.LoadScene("Main Scene");
     }
     public void OnQuitButtonPressed()

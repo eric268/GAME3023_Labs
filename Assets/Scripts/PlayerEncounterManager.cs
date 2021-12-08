@@ -235,6 +235,9 @@ public class PlayerEncounterManager : MonoBehaviour
 
     void FleeButtonPressed()
     {
+        PlayerEvents events = FindObjectOfType<PlayerEvents>();
+        events.onExitEncounterEvent.Invoke();
+        MusicManager.Instance.PlayTrack(MusicManager.TrackID.Overworld);
         SceneManager.LoadScene("Main Scene");
     }
 
