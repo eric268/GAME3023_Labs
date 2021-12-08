@@ -5,7 +5,8 @@ using UnityEngine;
 
 public class Character_Movement : MonoBehaviour
 {
-    
+    private int randNum = 0;
+    private bool isInTallGrass = false;
     [SerializeField]
     private float m_fMovementSpeed = 1.0f;
 
@@ -38,14 +39,15 @@ public class Character_Movement : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
-        if (Input.GetKeyDown(KeyCode.E))
-        {
-            GetComponent<SaveLoadPlayerPos>().SavePlayerPosition();
-            SceneManager.LoadScene("RandomEncounterScene");
-        }
+        //if (Input.GetKeyDown(KeyCode.E))
+        //{
+        //    GetComponent<SaveLoadPlayerPos>().SavePlayerPosition();
+        //    SceneManager.LoadScene("RandomEncounterScene");
+        //}
 
         float x = Input.GetAxisRaw("Horizontal");
         float y = Input.GetAxisRaw("Vertical");
+
 
         if (y > 0)
         {
@@ -69,15 +71,24 @@ public class Character_Movement : MonoBehaviour
         }
 
 
-        //Debug.Log("X: " +  x);
-        //Debug.Log("Y: " + y);
-
-
-
-
         m_vMovementVector = new Vector3(x, y, 0).normalized * m_fMovementSpeed;
 
         m_rigidBody.velocity = m_vMovementVector;
+        if(m_rigidBody.velocity.magnitude!=0)
+        {
+            if(isInTallGrass)
+            {
+                Debug.Log("touching tall grass");
+                randNum = Random.RandomRange(0, 1500);
+                if (randNum < 10)
+                {
+                    Debug.Log("the odds are right");
+
+                    GetComponent<SaveLoadPlayerPos>().SavePlayerPosition();
+                    SceneManager.LoadScene("RandomEncounterScene");
+                }
+            }
+        }
         
     }
     public void PlayerPosLoad()
@@ -95,6 +106,20 @@ public class Character_Movement : MonoBehaviour
             else
                 m_animator.SetBool(name, false);
 
+        }
+    }
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.tag == "TallGrass")
+        {
+            isInTallGrass = true;
+        }
+    }
+    private void OnTriggerExit2D(Collider2D collision)
+    {
+        if (collision.tag == "TallGrass")
+        {
+            isInTallGrass = false;
         }
     }
 }
