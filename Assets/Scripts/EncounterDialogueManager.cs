@@ -67,6 +67,7 @@ public class EncounterDialogueManager : MonoBehaviour
                 {
                     if (exitEncounter)
                     {
+                        MusicManager.Instance.PlayTrack(MusicManager.TrackID.Overworld);
                         SceneManager.LoadScene("Main Scene");
                     }
                     else if (playerLeveledUp)
