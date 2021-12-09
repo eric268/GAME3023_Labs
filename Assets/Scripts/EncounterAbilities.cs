@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
 using System;
+using System.Linq;
+using System.Text.RegularExpressions;
 
 public enum AbilityType
 {
@@ -31,28 +33,30 @@ public class EncounterAbilities : MonoBehaviour
     }
     public static void LoadAbilities()
     {
-        string path = Application.dataPath + "/TextDocs/Abilities.txt";
-
-        if (File.Exists(path))
+        TextAsset abilityDoc = (TextAsset)Resources.Load("Abilities", typeof(TextAsset));
+        if (abilityDoc)
         {
             abilityList = new List<Ability>();
-            StreamReader sr = new StreamReader(path);
-            string line = "";
+            string abilityDocText = abilityDoc.text;
+            string[][] abilityTextLine = abilityDocText.Split(new string[] { "\n" }, StringSplitOptions.None).Select(x => x.Split(',')).ToArray();
 
-            while ((line = sr.ReadLine()) != null)
+            for (int i = 0; i < abilityTextLine.Length; i++)
             {
-                string[] arr = line.Split(',');
-                int idNumber = int.Parse(arr[0]);
-                string name = arr[1];
-                string description = arr[2];
-                int damage = int.Parse(arr[3]);
-                float critChance = float.Parse(arr[4]);
-                float accuracy = float.Parse(arr[5]);
-                AbilityType type = (AbilityType)(int.Parse(arr[6]));
-                float accuracyAfflication = float.Parse(arr[7]);
-                Ability ability = new Ability(idNumber, name, description, damage, critChance, accuracy, type, accuracyAfflication);
-                abilityList.Add(ability);
+                for (int j = 0; j < abilityTextLine[j].Length; j++)
+                {
+                    int idNumber = int.Parse(abilityTextLine[j][0]);
+                    string name = abilityTextLine[j][1];
+                    string description = abilityTextLine[j][2];
+                    int damage = int.Parse(abilityTextLine[j][3]);
+                    float critChance = float.Parse(abilityTextLine[j][4]);
+                    float accuracy = float.Parse(abilityTextLine[j][5]);
+                    AbilityType type = (AbilityType)(int.Parse(abilityTextLine[j][6]));
+                    float accuracyAfflication = float.Parse(abilityTextLine[j][7]);
+                    Ability ability = new Ability(idNumber, name, description, damage, critChance, accuracy, type, accuracyAfflication);
+                    abilityList.Add(ability);
+                }
             }
+
         }
         else
             Debug.LogError("Could not find Abilities text file");

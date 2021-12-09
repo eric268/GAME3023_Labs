@@ -110,7 +110,7 @@ public class LevelUp
 
         for (int i = 1; i < array.Length + 1; i++)
         {
-            LevelUp levelInfo = new LevelUp(i + 1, i * 5, i * 4);
+            LevelUp levelInfo = new LevelUp(i + 1, i * 10, i * 4);
             array[i-1] = levelInfo;
         }
 
